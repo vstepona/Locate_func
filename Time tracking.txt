@@ -1,0 +1,12 @@
+Project time tracking, Vidmantas and Kevin combined
+
+
+01/20/14 3h
+Chosing language to learn.
+
+
+02/01/2014  4h
+Initial project discision. Use of multithreading opportunities. Plan of action.
+
+02/16/2014 10h
+Setting up Git repository, installing Eclipse, writing out plan of action.
