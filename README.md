@@ -15,4 +15,5 @@ References
 ----------
 
 * [Kepler - Eclipse Documentation](http://help.eclipse.org/kepler/index.jsp)
+* [Using JAR files](http://docs.oracle.com/javase/tutorial/deployment/jar/basicsindex.html)
 
