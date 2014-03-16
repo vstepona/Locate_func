@@ -15,6 +15,9 @@ run: LocateFunc.class
 
 #	java LocateFunc "/home/zkevin/workspace/labs/StructureOfProgrammingLanguages/Locate_func/source/testSourceFiles"
 
+test:
+	java -cp ".:javaparser.jar" LocateFunc testSourceFiles/testClass1.java testSourceFiles/testClass2.java
+
 help: usage
 usage:
 	@echo "Usage:"
