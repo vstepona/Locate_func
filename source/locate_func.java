@@ -9,10 +9,12 @@ import java.util.regex.Matcher;
 import java.util.List;
 import java.util.Map;
 
+// Java parsing library
 import japa.parser.*;
 import japa.parser.ast.*;
 import japa.parser.ast.visitor.*;
 import japa.parser.ast.body.*;
+import japa.parser.ast.expr.*;
 
 //----------------------------------------------------------------------
 class LocateFunc
@@ -22,7 +24,14 @@ class LocateFunc
 // Requires a path to source files.
 public static void main(String[] args)
 {
-	for (String file : args){
+	parseFiles(args);
+}
+
+
+//----------------------------------------
+private static void parseFiles(String[] fileNames)
+{
+	for (String file : fileNames){
 		ThreadDemo T1 = new ThreadDemo(file);
 		T1.start();
 	}
@@ -48,7 +57,8 @@ public static void findFuncCalls(String fileName)
 
 		//System.out.println(cu.toString());
 		// visit and print the methods names
-		new MethodVisitor().visit(cu, null);
+		new MethodVisitor().visit(cu, fileName);
+		new MethodCallVisitor().visit(cu, fileName);
 
 	} catch (IOException ioe){
 		System.out.println("Input/Output error.");
@@ -63,7 +73,16 @@ private static class MethodVisitor extends VoidVisitorAdapter {
 		// here you can access the attributes of the method.
 		// this method will be called for all methods in this 
 		// CompilationUnit, including inner class methods
-		System.out.println(n.getName() + " " + n.getBeginLine());
+		System.out.println("Declaration: " + n.getName() + " " + n.getBeginLine() + " " + arg.toString());
+	}
+}
+private static class MethodCallVisitor extends VoidVisitorAdapter {
+	@Override
+	public void visit(MethodCallExpr n, Object arg) {
+		// here you can access the attributes of the method.
+		// this method will be called for all methods in this 
+		// CompilationUnit, including inner class methods
+		System.out.println("Call: " + n.getName() + " " + n.getBeginLine() + " " + arg.toString());
 	}
 }
 

@@ -1,0 +1,136 @@
+javaparserSource/
+├── COPYING
+├── COPYING.LESSER
+├── javaparser-1.0.8-src.zip
+├── readme.txt
+├── src
+│   └── japa
+│       └── parser
+│           ├── ast
+│           │   ├── BlockComment.java
+│           │   ├── body
+│           │   │   ├── AnnotationDeclaration.java
+│           │   │   ├── AnnotationMemberDeclaration.java
+│           │   │   ├── BodyDeclaration.java
+│           │   │   ├── ClassOrInterfaceDeclaration.java
+│           │   │   ├── ConstructorDeclaration.java
+│           │   │   ├── EmptyMemberDeclaration.java
+│           │   │   ├── EmptyTypeDeclaration.java
+│           │   │   ├── EnumConstantDeclaration.java
+│           │   │   ├── EnumDeclaration.java
+│           │   │   ├── FieldDeclaration.java
+│           │   │   ├── InitializerDeclaration.java
+│           │   │   ├── JavadocComment.java
+│           │   │   ├── MethodDeclaration.java
+│           │   │   ├── ModifierSet.java
+│           │   │   ├── Parameter.java
+│           │   │   ├── TypeDeclaration.java
+│           │   │   ├── VariableDeclaratorId.java
+│           │   │   └── VariableDeclarator.java
+│           │   ├── Comment.java
+│           │   ├── CompilationUnit.java
+│           │   ├── expr
+│           │   │   ├── AnnotationExpr.java
+│           │   │   ├── ArrayAccessExpr.java
+│           │   │   ├── ArrayCreationExpr.java
+│           │   │   ├── ArrayInitializerExpr.java
+│           │   │   ├── AssignExpr.java
+│           │   │   ├── BinaryExpr.java
+│           │   │   ├── BooleanLiteralExpr.java
+│           │   │   ├── CastExpr.java
+│           │   │   ├── CharLiteralExpr.java
+│           │   │   ├── ClassExpr.java
+│           │   │   ├── ConditionalExpr.java
+│           │   │   ├── DoubleLiteralExpr.java
+│           │   │   ├── EnclosedExpr.java
+│           │   │   ├── Expression.java
+│           │   │   ├── FieldAccessExpr.java
+│           │   │   ├── InstanceOfExpr.java
+│           │   │   ├── IntegerLiteralExpr.java
+│           │   │   ├── IntegerLiteralMinValueExpr.java
+│           │   │   ├── LiteralExpr.java
+│           │   │   ├── LongLiteralExpr.java
+│           │   │   ├── LongLiteralMinValueExpr.java
+│           │   │   ├── MarkerAnnotationExpr.java
+│           │   │   ├── MemberValuePair.java
+│           │   │   ├── MethodCallExpr.java
+│           │   │   ├── NameExpr.java
+│           │   │   ├── NormalAnnotationExpr.java
+│           │   │   ├── NullLiteralExpr.java
+│           │   │   ├── ObjectCreationExpr.java
+│           │   │   ├── QualifiedNameExpr.java
+│           │   │   ├── SingleMemberAnnotationExpr.java
+│           │   │   ├── StringLiteralExpr.java
+│           │   │   ├── SuperExpr.java
+│           │   │   ├── ThisExpr.java
+│           │   │   ├── UnaryExpr.java
+│           │   │   └── VariableDeclarationExpr.java
+│           │   ├── ImportDeclaration.java
+│           │   ├── LineComment.java
+│           │   ├── Node.java
+│           │   ├── PackageDeclaration.java
+│           │   ├── stmt
+│           │   │   ├── AssertStmt.java
+│           │   │   ├── BlockStmt.java
+│           │   │   ├── BreakStmt.java
+│           │   │   ├── CatchClause.java
+│           │   │   ├── ContinueStmt.java
+│           │   │   ├── DoStmt.java
+│           │   │   ├── EmptyStmt.java
+│           │   │   ├── ExplicitConstructorInvocationStmt.java
+│           │   │   ├── ExpressionStmt.java
+│           │   │   ├── ForeachStmt.java
+│           │   │   ├── ForStmt.java
+│           │   │   ├── IfStmt.java
+│           │   │   ├── LabeledStmt.java
+│           │   │   ├── ReturnStmt.java
+│           │   │   ├── Statement.java
+│           │   │   ├── SwitchEntryStmt.java
+│           │   │   ├── SwitchStmt.java
+│           │   │   ├── SynchronizedStmt.java
+│           │   │   ├── ThrowStmt.java
+│           │   │   ├── TryStmt.java
+│           │   │   ├── TypeDeclarationStmt.java
+│           │   │   └── WhileStmt.java
+│           │   ├── type
+│           │   │   ├── ClassOrInterfaceType.java
+│           │   │   ├── PrimitiveType.java
+│           │   │   ├── ReferenceType.java
+│           │   │   ├── Type.java
+│           │   │   ├── VoidType.java
+│           │   │   └── WildcardType.java
+│           │   ├── TypeParameter.java
+│           │   └── visitor
+│           │       ├── DumpVisitor.java
+│           │       ├── EqualsVisitor.java
+│           │       ├── GenericVisitorAdapter.java
+│           │       ├── GenericVisitor.java
+│           │       ├── ModifierVisitorAdapter.java
+│           │       ├── VoidVisitorAdapter.java
+│           │       └── VoidVisitor.java
+│           ├── ASTHelper.java
+│           ├── ASTParserConstants.java
+│           ├── ASTParser.java
+│           ├── ASTParserTokenManager.java
+│           ├── java_1_5.jj
+│           ├── JavaCharStream.java
+│           ├── JavaParser.java
+│           ├── ParseException.java
+│           ├── Token.java
+│           └── TokenMgrError.java
+└── test
+    └── japa
+        └── parser
+            └── ast
+                └── test
+                    ├── AllTests.java
+                    ├── classes
+                    │   ├── DumperTestClass.java
+                    │   └── JavadocTestClass.java
+                    ├── Helper.java
+                    ├── TestAdapters.java
+                    ├── TestDumper.java
+                    ├── TestHashCodeEquals.java
+                    └── TestNodePositions.java
+
+15 directories, 118 files
