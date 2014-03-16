@@ -6,10 +6,14 @@
 all: compile run
 
 compile: locate_func.java
-	javac locate_func.java
+	javac -cp ".:javaparser.jar" locate_func.java
+
+#	javac locate_func.java
 
 run: LocateFunc.class
-	java LocateFunc "/home/zkevin/workspace/labs/StructureOfProgrammingLanguages/Locate_func/source/testSourceFiles"
+	java -cp ".:javaparser.jar" LocateFunc
+
+#	java LocateFunc "/home/zkevin/workspace/labs/StructureOfProgrammingLanguages/Locate_func/source/testSourceFiles"
 
 help: usage
 usage:

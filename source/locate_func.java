@@ -9,6 +9,10 @@ import java.util.regex.Matcher;
 import java.util.List;
 import java.util.Map;
 
+import japa.parser.*;
+import japa.parser.ast.*;
+import japa.parser.ast.visitor.*;
+import japa.parser.ast.body.*;
 
 //----------------------------------------------------------------------
 class LocateFunc
@@ -28,6 +32,22 @@ public static void main(String[] args)
 private static void findFuncCalls(String fileName)
 {
 	try {
+		FileInputStream inFile = new FileInputStream(fileName);
+
+		CompilationUnit cu = new CompilationUnit();
+		try {
+			// parse the file
+			cu = JavaParser.parse(inFile);
+		} catch (Exception e){
+		} finally {
+			inFile.close();
+		}
+
+		//System.out.println(cu.toString());
+		// visit and print the methods names
+		new MethodVisitor().visit(cu, null);
+
+/*
 		BufferedReader inFile = new BufferedReader(new FileReader(fileName));
 
 		// Function name pattern matching
@@ -53,20 +73,33 @@ private static void findFuncCalls(String fileName)
 					}
 				}
 			}
-/*
-			ArrayList<String> lineData= 
-				new ArrayList<String>(Arrays.asList(line.split(",")));
-			for (String s : lineData) s = s.trim();
 
-			data.add(lineData);
-*/
+//			ArrayList<String> lineData= 
+//				new ArrayList<String>(Arrays.asList(line.split(",")));
+//			for (String s : lineData) s = s.trim();
+//
+//			data.add(lineData);
+
 			count++;
 		}
+*/
 	} catch (IOException ioe){
 		System.out.println("Input/Output error.");
 		System.exit(1);
 	}
 }
+
+// Simple visitor implementation for visiting MethodDeclaration nodes. 
+private static class MethodVisitor extends VoidVisitorAdapter {
+	@Override
+	public void visit(MethodDeclaration n, Object arg) {
+		// here you can access the attributes of the method.
+		// this method will be called for all methods in this 
+		// CompilationUnit, including inner class methods
+		System.out.println(n.getName() + " " + n.getBeginLine());
+	}
+}
+
 
 }
 
