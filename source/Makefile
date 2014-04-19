@@ -13,7 +13,7 @@ run: compile
 
 #	java LocateFunc testSourceFiles
 
-test:
+test: clean compile
 	java -cp ".:javaparser.jar" LocateFunc testSourceFiles/testClass1.java testSourceFiles/testClass2.java
 
 help: usage

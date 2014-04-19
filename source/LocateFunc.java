@@ -1,17 +1,20 @@
-/* locate_func.java
+/* LocateFunc.java
  *
  * 2014-03-12
- */
+*/
 
-package loc_fun_5_0;
+//package loc_func;
 
 import java.io.*;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
+/*
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
+*/
 
-/*	import java.util.regex.Pattern;
-	import java.util.regex.Matcher;
-	import java.util.List;
-	import java.util.Map;
- */
 // Java parsing library
 import japa.parser.*;
 import japa.parser.ast.*;
@@ -20,12 +23,24 @@ import japa.parser.ast.body.*;
 import japa.parser.ast.expr.*;
 
 
-//----------------locate functions------------------------------
-public class loc_func {
-	//----------------------------------------
+//----------------locate functions------------------------------------
+public class LocateFunc {
+	private class FuncInfo {
+		public Integer definition = -1;
+		public List<Integer> cal = new ArrayList<Integer>();
+	}
+	// Table for "function names" to "function definition location" and 
+	// "function call locations"; order independent.
+	// {funcName: {"definition": line#, "call": [line#, line#]}}
+	private Map<String, FuncInfo> functionTable = 
+		new HashMap<String, FuncInfo>();
+	//private Map<String, Map<String, List<Integers>>> functionTable;
+
+	//--------------------------------------------
 	// Requires a path to source files.
 	public static void main(String[] args)
 	{
+/*
 		String path = "C:/Users/vid/Desktop/kent state/2014 spring/Structure of programming languages/Project Locate_func/Locate_func/loc_fun_5_0/src/testSourceFiles/";
 		String f1 = path + "testClass1.java";
 		String f2 = path + "testClass2.java";
@@ -35,10 +50,12 @@ public class loc_func {
 
 		//parse files 
 		parseFiles(files);
+*/
+		parseFiles(args);
 	}
 
 
-	//-------------parse files using threads----------
+	//----------parse files using threads----------
 	private static void parseFiles(String[] fileNames)
 	{
 		//for each file create a thread
@@ -49,7 +66,7 @@ public class loc_func {
 	}
 
 
-	//----------------------------------------
+	//--------------------------------------------
 	// Parse a source file to object
 	//private static Map<String, List<Integer>> findFuncCalls(String fileName)
 	public static void readFileToParseObjects(String fileName)
@@ -77,7 +94,8 @@ public class loc_func {
 		}
 	}
 
-	
+
+	//--------------------------------------------
 	// Simple visitor implementation for visiting MethodDeclaration nodes. 
 	//find function definitions
 	private static class MethodVisitor extends VoidVisitorAdapter<Object> {
@@ -89,9 +107,9 @@ public class loc_func {
 			System.out.println("Declaration: " + n.getName() + " " + n.getBeginLine() + " " + arg.toString());
 		}
 	}
-	
-	
-	
+
+
+	//--------------------------------------------
 	//find function calls	
 	private static class MethodCallVisitor extends VoidVisitorAdapter<Object> {
 		@Override
@@ -102,40 +120,37 @@ public class loc_func {
 			System.out.println("Call: " + n.getName() + " " + n.getBeginLine() + " " + arg.toString());
 		}
 	}
-	
-	
-	
 
 }
 
 
-//----------------------------------------
+//--------------------------------------------------------------------
 class ParseByThread extends Thread {
 	private Thread t;
 	private String threadName;
 
-	ParseByThread( String name){
+
+	//--------------------------------------------
+	ParseByThread(String name){
 		threadName = name;
-		System.out.println("Creating thread" +  threadName );
+		System.out.println("Creating thread " +  threadName);
 	}
+
+
+	//--------------------------------------------
 	public void run() {
-		System.out.println("Running " +  threadName );
-		loc_func.readFileToParseObjects(threadName);
-		/*
-	      try {
-				LocateFunc.findFuncCalls(threadName);
-	         for(int i = 4; i > 0; i--) {
-	            System.out.println("Thread: " + threadName + ", " + i);
-	            // Let the thread sleep for a while.
-	            Thread.sleep(50);
-	         }
-	     } catch (InterruptedException e) {
-	         System.out.println("Thread " +  threadName + " interrupted.");
-	     }
-		 */
+		System.out.println("Running " +  threadName);
+		//try {
+			LocateFunc.readFileToParseObjects(threadName);
+			//Thread.sleep(50);
+		//} catch (InterruptedException e){
+		//	System.out.println("Thread " + threadName + " interrupted.");
+		//}
 		System.out.println("Thread " +  threadName + " exiting.");
 	}
 
+
+	//--------------------------------------------
 	public void start ()
 	{
 		System.out.println("Starting " +  threadName );
