@@ -27,14 +27,13 @@ import japa.parser.ast.expr.*;
 public class LocateFunc {
 	private static class FuncInfo {
 		public Integer definition = -1;
-		public List<Integer> call = new ArrayList<Integer>();
+		public List<Integer> calls = new ArrayList<Integer>();
 	}
 	// Table for "function names" to "function definition location" and 
 	// "function call locations"; order independent.
 	// {fileName: {funcName: {"definition": line#, "call": [line#, line#]} } }
 	private static Map<String, Map<String, FuncInfo>> functionTable = 
 		new HashMap<String, Map<String, FuncInfo>>();
-//private Map<String, Map<String, Map<String, List<Integers>>>> functionTable;
 
 	//--------------------------------------------
 	// Requires a path to source files.
@@ -57,9 +56,12 @@ public class LocateFunc {
 		} catch (InterruptedException e){
 			System.out.println("Thread interrupted.");
 		}
+		dumpFunctionTable();
+		/*
 		System.out.println(functionTable);
 		System.out.println(functionTable.get("testSourceFiles/testClass1.java").get("foo").definition);
 		System.out.println(functionTable.get("testSourceFiles/testClass2.java").get("foo").call);
+		*/
 	}
 
 
@@ -123,7 +125,7 @@ public class LocateFunc {
 		} else {
 			FuncInfo info = new FuncInfo();
 			info.definition = lineNumber;
-			//info.call = new ArrayList<Integer>();
+			//info.calls = new ArrayList<Integer>();
 			Map<String, FuncInfo> function = new HashMap<String, FuncInfo>();
 			function.put(functionName, info);
 			functionTable.put(fileName, function);
@@ -142,16 +144,16 @@ public class LocateFunc {
 		if (functionTable.containsKey(fileName)){
 			if (functionTable.get(fileName).containsKey(functionName)){
 				functionTable.get(fileName).get(functionName)
-					.call.add(lineNumber);
+					.calls.add(lineNumber);
 			} else {
 				FuncInfo info = new FuncInfo();
-				info.call.add(lineNumber);
+				info.calls.add(lineNumber);
 				functionTable.get(fileName).put(functionName, info);
 			}
 		} else {
 			FuncInfo info = new FuncInfo();
-			//info.call = new ArrayList<Integer>();
-			info.call.add(lineNumber);
+			//info.calls = new ArrayList<Integer>();
+			info.calls.add(lineNumber);
 			Map<String, FuncInfo> function = new HashMap<String, FuncInfo>();
 			function.put(functionName, info);
 			functionTable.put(fileName, function);
@@ -184,6 +186,33 @@ public class LocateFunc {
 //			System.out.println("Call: " + n.getName() + " " + n.getBeginLine() + " " + arg.toString());
 			addCall(arg.toString(), n.getName(), n.getBeginLine());
 		}
+	}
+
+
+	//--------------------------------------------
+	// A method for debugging the logging table, that record function locations.
+	private static void dumpFunctionTable()
+	{
+		System.out.println();
+		System.out.println("================================================================================");
+		System.out.println("Dumping function records table...");
+		System.out.println("================================================================================");
+
+		for (String fileName : functionTable.keySet()){
+			System.out.println("--------------------------------------------------------------------------------");
+			System.out.println("File name: " + fileName);
+			System.out.format("\tFunctions:\n");
+			for (String functionName : functionTable.get(fileName).keySet()){
+				System.out.format("\t\tName: " + functionName + "\n");
+				System.out.format("\t\t\tDefinition: " + 
+					functionTable.get(fileName).get(functionName).definition + "\n");
+				System.out.format("\t\t\tCalls: " + 
+					functionTable.get(fileName).get(functionName).calls + "\n");
+			}
+		}
+
+		System.out.println("================================================================================");
+		System.out.println();
 	}
 
 }
