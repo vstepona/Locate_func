@@ -5,7 +5,10 @@
 
 package loc_fun_5_0;
 
+import java.awt.List;
 import java.io.*;
+import java.util.ArrayList;
+
 
 /*	import java.util.regex.Pattern;
 	import java.util.regex.Matcher;
@@ -24,7 +27,7 @@ import japa.parser.ast.expr.*;
 public class loc_func {
 	//----------------------------------------
 	// Requires a path to source files.
-	public static void main(String[] args)
+	public static String[] getLibraries()
 	{
 		String path = "C:/Users/vid/Desktop/kent state/2014 spring/Structure of programming languages/Project Locate_func/Locate_func/loc_fun_5_0/src/testSourceFiles/";
 		String f1 = path + "testClass1.java";
@@ -34,17 +37,31 @@ public class loc_func {
 		//files[1] = f2;
 
 		//parse files 
-		parseFiles(files);
+		//parseFiles(files);
+		
+		return files;
 	}
 
 
 	//-------------parse files using threads----------
-	private static void parseFiles(String[] fileNames)
+	public static void parseFiles(String[] fileNames)
 	{
+		ArrayList<ParseByThread> threadList = new ArrayList<ParseByThread>();
 		//for each file create a thread
 		for (String file : fileNames){
-			ParseByThread T1 = new ParseByThread(file);
-			T1.start();
+			ParseByThread t = new ParseByThread(file);
+			t.start();
+			threadList.add(t); 	//create list of threads
+		}
+		
+		//wait for the threads to finish
+		try {
+			for (ParseByThread t : threadList){
+				t.join();
+			}
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 
