@@ -25,16 +25,16 @@ import japa.parser.ast.expr.*;
 
 //----------------locate functions------------------------------------
 public class LocateFunc {
-	private class FuncInfo {
+	private static class FuncInfo {
 		public Integer definition = -1;
-		public List<Integer> cal = new ArrayList<Integer>();
+		public List<Integer> call = new ArrayList<Integer>();
 	}
 	// Table for "function names" to "function definition location" and 
 	// "function call locations"; order independent.
-	// {funcName: {"definition": line#, "call": [line#, line#]}}
-	private Map<String, FuncInfo> functionTable = 
-		new HashMap<String, FuncInfo>();
-	//private Map<String, Map<String, List<Integers>>> functionTable;
+	// {fileName: {funcName: {"definition": line#, "call": [line#, line#]} } }
+	private static Map<String, Map<String, FuncInfo>> functionTable = 
+		new HashMap<String, Map<String, FuncInfo>>();
+//private Map<String, Map<String, Map<String, List<Integers>>>> functionTable;
 
 	//--------------------------------------------
 	// Requires a path to source files.
@@ -52,6 +52,14 @@ public class LocateFunc {
 		parseFiles(files);
 */
 		parseFiles(args);
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e){
+			System.out.println("Thread interrupted.");
+		}
+		System.out.println(functionTable);
+		System.out.println(functionTable.get("testSourceFiles/testClass1.java").get("foo").definition);
+		System.out.println(functionTable.get("testSourceFiles/testClass2.java").get("foo").call);
 	}
 
 
@@ -96,28 +104,85 @@ public class LocateFunc {
 
 
 	//--------------------------------------------
+	// Record a definition location
+	private static void addDefinition(
+		String fileName, 
+		String functionName,
+		Integer lineNumber
+	)
+	{
+		if (functionTable.containsKey(fileName)){
+			if (functionTable.get(fileName).containsKey(functionName)){
+				functionTable.get(fileName).get(functionName)
+					.definition = lineNumber;
+			} else {
+				FuncInfo info = new FuncInfo();
+				info.definition = lineNumber;
+				functionTable.get(fileName).put(functionName, info);
+			}
+		} else {
+			FuncInfo info = new FuncInfo();
+			info.definition = lineNumber;
+			//info.call = new ArrayList<Integer>();
+			Map<String, FuncInfo> function = new HashMap<String, FuncInfo>();
+			function.put(functionName, info);
+			functionTable.put(fileName, function);
+		}
+	}
+
+
+	//--------------------------------------------
+	// Record a call location
+	private static void addCall(
+		String fileName, 
+		String functionName,
+		Integer lineNumber
+	)
+	{
+		if (functionTable.containsKey(fileName)){
+			if (functionTable.get(fileName).containsKey(functionName)){
+				functionTable.get(fileName).get(functionName)
+					.call.add(lineNumber);
+			} else {
+				FuncInfo info = new FuncInfo();
+				info.call.add(lineNumber);
+				functionTable.get(fileName).put(functionName, info);
+			}
+		} else {
+			FuncInfo info = new FuncInfo();
+			//info.call = new ArrayList<Integer>();
+			info.call.add(lineNumber);
+			Map<String, FuncInfo> function = new HashMap<String, FuncInfo>();
+			function.put(functionName, info);
+			functionTable.put(fileName, function);
+		}
+	}
+
+	//--------------------------------------------
 	// Simple visitor implementation for visiting MethodDeclaration nodes. 
 	//find function definitions
-	private static class MethodVisitor extends VoidVisitorAdapter<Object> {
+	private static class MethodVisitor extends VoidVisitorAdapter<Object>{
 		@Override
-		public void visit(MethodDeclaration n, Object arg) {
-			// here you can access the attributes of the method.
-			// this method will be called for all methods in this 
-			// CompilationUnit, including inner class methods
-			System.out.println("Declaration: " + n.getName() + " " + n.getBeginLine() + " " + arg.toString());
+		public void visit(MethodDeclaration n, Object arg){
+			// Here is where attributes of the method can be accessed.
+			// This visit method will be called for all methods in the 
+			// CompilationUnit, including inner class methods.
+//			System.out.println("Declaration: " + n.getName() + " " + n.getBeginLine() + " " + arg.toString());
+			addDefinition(arg.toString(), n.getName(), n.getBeginLine());
 		}
 	}
 
 
 	//--------------------------------------------
 	//find function calls	
-	private static class MethodCallVisitor extends VoidVisitorAdapter<Object> {
+	private static class MethodCallVisitor extends VoidVisitorAdapter<Object>{
 		@Override
-		public void visit(MethodCallExpr n, Object arg) {
-			// here you can access the attributes of the method.
-			// this method will be called for all methods in this 
-			// CompilationUnit, including inner class methods
-			System.out.println("Call: " + n.getName() + " " + n.getBeginLine() + " " + arg.toString());
+		public void visit(MethodCallExpr n, Object arg){
+			// Here is where attributes of the method can be accessed.
+			// This visit method will be called for all methods in the 
+			// CompilationUnit, including inner class methods.
+//			System.out.println("Call: " + n.getName() + " " + n.getBeginLine() + " " + arg.toString());
+			addCall(arg.toString(), n.getName(), n.getBeginLine());
 		}
 	}
 
