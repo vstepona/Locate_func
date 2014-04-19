@@ -1,27 +1,24 @@
 # Makefile
 # 
-# Kevin Whalen, Vid
+# Kevin Whalen, Vidmantas Steponavicius
 # Due: 2014-02-24
 
-all: compile run
+compile: LocateFunc.java
+	javac -cp ".:javaparser.jar" LocateFunc.java
 
-compile: locate_func.java
-	javac -cp ".:javaparser.jar" locate_func.java
+#	javac LocateFunc.java
 
-#	javac locate_func.java
-
-run: LocateFunc.class
+run: compile
 	java -cp ".:javaparser.jar" LocateFunc
 
-#	java LocateFunc "/home/zkevin/workspace/labs/StructureOfProgrammingLanguages/Locate_func/source/testSourceFiles"
+#	java LocateFunc testSourceFiles
 
-test:
+test: clean compile
 	java -cp ".:javaparser.jar" LocateFunc testSourceFiles/testClass1.java testSourceFiles/testClass2.java
 
 help: usage
 usage:
 	@echo "Usage:"
-	@echo "  make all		# Compiles and runs demonstration."
 	@echo "  make compile"
 	@echo "  make run		# Run using demonstration input."
 	@echo "  make help		# or `make usage` for this information."
