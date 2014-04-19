@@ -10,10 +10,6 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
-/*
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
-*/
 
 // Java parsing library
 import japa.parser.*;
@@ -25,8 +21,11 @@ import japa.parser.ast.expr.*;
 
 //----------------locate functions------------------------------------
 public class LocateFunc {
+	//--------------------------------------------
 	private static class FuncInfo {
+		// Line number of where the function is defined.
 		public Integer definition = -1;
+		// List of line numbers of where the function is called.
 		public List<Integer> calls = new ArrayList<Integer>();
 	}
 	// Table for "function names" to "function definition location" and 
@@ -35,8 +34,12 @@ public class LocateFunc {
 	private static Map<String, Map<String, FuncInfo>> functionTable = 
 		new HashMap<String, Map<String, FuncInfo>>();
 
+
 	//--------------------------------------------
 	// Requires a path to source files.
+	//public static void getLibraries(String[] fileNames)
+	//public static String[] getLibraries()
+	//public static String[] getLibraries(String[] fileNames)
 	public static void main(String[] args)
 	{
 /*
@@ -44,8 +47,6 @@ public class LocateFunc {
 		String f1 = path + "testClass1.java";
 		String f2 = path + "testClass2.java";
 		String[] files = {f1, f2};
-		//files[0] = f1;
-		//files[1] = f2;
 
 		//parse files 
 		parseFiles(files);
@@ -57,11 +58,6 @@ public class LocateFunc {
 			System.out.println("Thread interrupted.");
 		}
 		dumpFunctionTable();
-		/*
-		System.out.println(functionTable);
-		System.out.println(functionTable.get("testSourceFiles/testClass1.java").get("foo").definition);
-		System.out.println(functionTable.get("testSourceFiles/testClass2.java").get("foo").call);
-		*/
 	}
 
 
