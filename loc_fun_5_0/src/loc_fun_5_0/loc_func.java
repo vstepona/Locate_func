@@ -5,16 +5,10 @@
 
 package loc_fun_5_0;
 
-import java.awt.List;
 import java.io.*;
 import java.util.ArrayList;
 
 
-/*	import java.util.regex.Pattern;
-	import java.util.regex.Matcher;
-	import java.util.List;
-	import java.util.Map;
- */
 // Java parsing library
 import japa.parser.*;
 import japa.parser.ast.*;
