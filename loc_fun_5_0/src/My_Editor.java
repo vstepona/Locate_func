@@ -8,6 +8,7 @@ import javax.swing.border.LineBorder;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
@@ -23,6 +24,7 @@ import javax.swing.JTextPane;
 
 import java.awt.event.*;        //for action events
 import java.awt.font.TextAttribute;
+import java.awt.image.ColorModel;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
@@ -48,7 +50,7 @@ public class My_Editor extends JFrame {
 
 
 
-	 // Launch the application.
+	// Launch the application.
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -68,7 +70,7 @@ public class My_Editor extends JFrame {
 	}
 
 
-	
+
 	// Create the frame.
 	public My_Editor() {
 		//JFrame frame = new JFrame();
@@ -94,20 +96,23 @@ public class My_Editor extends JFrame {
 					libs[j] = file_iter.toString();
 					j++;
 				}
-				
+
 				//print files to be parsed ist
 				for(int i = 0; i < libs.length; i++){
 					System.out.println("file " + libs[i]);
 				}
-		
-				
+
+
 				System.out.println("parse libaries: ");
 
-			//	LocateFunc dataRecords = new LocateFunc();
-				//dataRecords.parseFiles(libs);
-				loc_func.parseFiles(libs);
+				LocateFunc dataRecords = new LocateFunc();
+				dataRecords.parseFiles(libs);
+				//loc_func.parseFiles(libs);
 
-				
+				LocateFunc.Definition def = dataRecords.callDefinitionLocation("foo");
+
+
+				System.out.println("asdasd  " + def.file);
 				
 				
 				
@@ -122,19 +127,19 @@ public class My_Editor extends JFrame {
 				System.out.println("Get functions calls list in the open file: ");
 
 				//dataRecords.CallsLocations(fileName)
-				
-				
-				
+
+
+
 				//textPane.getSelectionStart(1,4);
-				
+
 				//textPane.select(1, 20);
 				//textPane.selectAll();
 				//textPane.setSelectionEnd(20);
-				
-				
-				
-				
-				
+
+
+
+
+
 				System.out.println("Highlit func calls ");
 
 
@@ -161,17 +166,49 @@ public class My_Editor extends JFrame {
 		textPane.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				
-				Point pt = new Point(e.getX(), e.getY());
-			    int pos = textPane.viewToModel(pt);
-			    // whatever you need to do here
-				
-				
-			    System.out.println("mose clicked on character position" + pos);
-				
-				
-				
-				
+				if (e.getClickCount() == 2) {
+					
+					//get mouse position character
+					Point pt = new Point(e.getX(), e.getY());
+					int pos = textPane.viewToModel(pt);
+
+					//get start and end of selected word
+					int fun_start =  textPane.getSelectionStart();
+					int fun_end = textPane.getSelectionEnd();
+					
+					System.out.println("mose clicked on character position in the file " + pos);
+					System.out.println("mose clicked on word in the file start " + fun_start);
+					System.out.println("mose clicked on word in the file end " + fun_end);
+			
+					
+					
+					
+					StyleContext sc = StyleContext.getDefaultStyleContext();
+					AttributeSet aset = sc.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Foreground, sc);
+
+					aset = sc.addAttribute(aset, StyleConstants.FontFamily, "Lucida Console");
+					aset = sc.addAttribute(aset, StyleConstants.Alignment, StyleConstants.ALIGN_JUSTIFIED);
+					aset = sc.addAttribute(aset, StyleConstants.Underline, true);
+					aset = sc.addAttribute(aset, StyleConstants.ColorConstants.Foreground, Color.RED);
+					aset = sc.addAttribute(aset, StyleConstants.Bold, true);
+
+
+					//select section of text
+//					textPane.select(15, 20);
+					textPane.select(fun_start, fun_end); 
+					//change selection style
+					textPane.setCharacterAttributes(aset, false);
+					
+					
+					
+
+					System.out.println("you selected: " + textPane.getSelectedText());					
+					
+					//textPane.replaceSelection("!!!!!!!!!!!!!!!!!!!!!!");
+					
+				}
+
+ 
 			}
 		});
 		scrollPane.setViewportView(textPane);
@@ -244,7 +281,7 @@ public class My_Editor extends JFrame {
 
 				//read in file
 				Open_File(file);
-				
+
 				//label shows currently opne file
 				working_label(file);
 
@@ -280,7 +317,7 @@ public class My_Editor extends JFrame {
 		lblFile.setBounds(372, 55, 46, 14);
 		getContentPane().add(lblFile);
 
-		
+
 		//		Border emptyBorder = BorderFactory.createEmptyBorder();
 		//		scrollPane.setBorder(emptyBorder);
 
@@ -296,12 +333,12 @@ public class My_Editor extends JFrame {
 				if (evt.getClickCount() == 2) {
 					int index = list.locationToIndex(evt.getPoint());
 
-//					//save current file before switching to another one
-//					Save_File(list.getSelectedValue());
-					
+					//					//save current file before switching to another one
+					//					Save_File(list.getSelectedValue());
+
 					//set label to show current file open
 					lblFile.setText("File: " + list.getSelectedValue());
-				
+
 
 					//switch to double clicked file
 					Open_File(list.getSelectedValue());
@@ -342,30 +379,30 @@ public class My_Editor extends JFrame {
 		button.setFocusPainted(false);
 		button.setBounds(759, 46, 89, 23);
 		getContentPane().add(button);
-		
+
 		JButton btnNewButton_1 = new JButton("Test button");
 		btnNewButton_1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				
-					StyleContext sc = StyleContext.getDefaultStyleContext();
-			        AttributeSet aset = sc.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Foreground, sc);
-	
-			        aset = sc.addAttribute(aset, StyleConstants.FontFamily, "Lucida Console");
-			        aset = sc.addAttribute(aset, StyleConstants.Alignment, StyleConstants.ALIGN_JUSTIFIED);
-			        aset = sc.addAttribute(aset, StyleConstants.Underline, true);
-			        aset = sc.addAttribute(aset, StyleConstants.ColorConstants.Foreground, Color.RED);
-			        aset = sc.addAttribute(aset, StyleConstants.Bold, true);
-	
-			        
-			        //select section of text
-			        textPane.select(15, 20);
-			        //change selection style
-			        textPane.setCharacterAttributes(aset, false);
-			
-			//	textPane.getSelectedText();
+
+				StyleContext sc = StyleContext.getDefaultStyleContext();
+				AttributeSet aset = sc.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Foreground, sc);
+
+				aset = sc.addAttribute(aset, StyleConstants.FontFamily, "Lucida Console");
+				aset = sc.addAttribute(aset, StyleConstants.Alignment, StyleConstants.ALIGN_JUSTIFIED);
+				aset = sc.addAttribute(aset, StyleConstants.Underline, true);
+				aset = sc.addAttribute(aset, StyleConstants.ColorConstants.Foreground, Color.RED);
+				aset = sc.addAttribute(aset, StyleConstants.Bold, true);
+
+
+				//select section of text
+				textPane.select(15, 20);
+				//change selection style
+				textPane.setCharacterAttributes(aset, false);
+
+				//	textPane.getSelectedText();
 				//textPane.replaceSelection("!!!!!!!!!!!!!!!!!!!!!!");
-				
-				
+
+
 			}
 		});
 		btnNewButton_1.setBounds(372, 524, 89, 23);
