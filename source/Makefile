@@ -5,12 +5,11 @@
 
 compile: LocateFunc.java
 	javac -cp ".:javaparser.jar" LocateFunc.java
+	javac -cp ".:javaparser.jar" Test.java
 	cp LocateFunc.java ../loc_fun_5_0/src/.
 
-#	javac LocateFunc.java
-
 run: compile
-	java -cp ".:javaparser.jar" LocateFunc
+	java -cp ".:javaparser.jar" Test ./testSourceFiles/testClass1.java ./testSourceFiles/testClass2.java
 
 #	java LocateFunc testSourceFiles
 

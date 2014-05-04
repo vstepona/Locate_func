@@ -243,7 +243,11 @@ public class LocateFunc {
 			// Here is where attributes of the method can be accessed.
 			// This visit method will be called for all methods in the 
 			// CompilationUnit, including inner class methods.
-			addDefinition(arg.toString(), n.getName(), n.getBeginLine());
+			//if (n.getScope() != null){
+			//	addDefinition(arg.toString(), n.getScope() + n.getName(), n.getBeginLine());
+			//} else {
+				addDefinition(arg.toString(), n.getName(), n.getBeginLine());
+			//}
 		}
 	}
 
@@ -257,7 +261,11 @@ public class LocateFunc {
 			// Here is where attributes of the method can be accessed.
 			// This visit method will be called for all methods in the 
 			// CompilationUnit, including inner class methods.
-			addCall(arg.toString(), n.getName(), n.getBeginLine());
+			if (n.getScope() != null){
+				addCall(arg.toString(), n.getScope() + n.getName(), n.getBeginLine());
+			} else {
+				addCall(arg.toString(), n.getName(), n.getBeginLine());
+			}
 			//addCall(arg.toString(), n.getName(), n.getBeginLine());
 			//addCall(arg.toString(), n, arg.toString());
 			System.out.println(MethodCallExpr.class.getMethods().toString());
@@ -305,7 +313,7 @@ System.out.println("file: " + arg.toString() + ", scope: " + n.getScope() + ", f
 
 
 	// A method for debugging the logging table, that record function locations.
-	private void dumpFunctionTable()
+	public void dumpFunctionTable()
 	{
 		System.out.println();
 		System.out.println("================================================================================");
