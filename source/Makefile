@@ -5,6 +5,7 @@
 
 compile: LocateFunc.java
 	javac -cp ".:javaparser.jar" LocateFunc.java
+	cp LocateFunc.java ../loc_fun_5_0/src/.
 
 #	javac LocateFunc.java
 

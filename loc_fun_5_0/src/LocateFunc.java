@@ -37,7 +37,7 @@ public class LocateFunc {
 	//--------------------------------------------
 	// Function definition location information object.
 	public class Definition {
-		String file = "";
+		String fileName = "";
 		Integer line = -1;
 	}
 
@@ -295,7 +295,7 @@ System.out.println("file: " + arg.toString() + ", scope: " + n.getScope() + ", f
 			if (functionTable.get(fileName).containsKey(findFunc) && 
 				(-1 != functionTable.get(fileName).get(findFunc).definition))
 			{
-				def.file = fileName;
+				def.fileName = fileName;
 				def.line = functionTable.get(fileName).get(findFunc).definition;
 				return def;
 			}
