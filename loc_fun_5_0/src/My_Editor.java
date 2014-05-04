@@ -1,9 +1,15 @@
 import java.awt.Color;
 import java.awt.EventQueue;
+import java.awt.Font;
+import java.awt.Point;
 
 import javax.swing.JFrame;
 import javax.swing.border.LineBorder;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
 import javax.swing.*;
 
@@ -13,8 +19,10 @@ import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JTextPane;
 
 import java.awt.event.*;        //for action events
+import java.awt.font.TextAttribute;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
@@ -27,6 +35,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 
 public class My_Editor extends JFrame {
@@ -39,9 +48,7 @@ public class My_Editor extends JFrame {
 
 
 
-	/**
-	 * Launch the application.
-	 */
+	 // Launch the application.
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -61,9 +68,8 @@ public class My_Editor extends JFrame {
 	}
 
 
-	/**
-	 * Create the frame.
-	 */
+	
+	// Create the frame.
 	public My_Editor() {
 		//JFrame frame = new JFrame();
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -97,21 +103,38 @@ public class My_Editor extends JFrame {
 				
 				System.out.println("parse libaries: ");
 
+			//	LocateFunc dataRecords = new LocateFunc();
+				//dataRecords.parseFiles(libs);
 				loc_func.parseFiles(libs);
 
+				
+				
+				
+				
 				//wait for the threads to finish
 				try {
 					Thread.sleep(300);
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
+					// print errors if could not parse files
 					e.printStackTrace();
 				}
 
-				System.out.println("Call parser on me: ");
+				System.out.println("Get functions calls list in the open file: ");
 
-
-
-
+				//dataRecords.CallsLocations(fileName)
+				
+				
+				
+				//textPane.getSelectionStart(1,4);
+				
+				//textPane.select(1, 20);
+				//textPane.selectAll();
+				//textPane.setSelectionEnd(20);
+				
+				
+				
+				
+				
 				System.out.println("Highlit func calls ");
 
 
@@ -128,13 +151,29 @@ public class My_Editor extends JFrame {
 
 
 
-		btnNewButton.setBounds(10, 524, 180, 23);
+		btnNewButton.setBounds(18, 524, 180, 23);
 		getContentPane().add(btnNewButton);
 		btnNewButton.setFocusPainted(false);  //remove focus
 
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setBounds(372, 80, 572, 413);
 		getContentPane().add(scrollPane);
+		textPane.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				
+				Point pt = new Point(e.getX(), e.getY());
+			    int pos = textPane.viewToModel(pt);
+			    // whatever you need to do here
+				
+				
+			    System.out.println("mose clicked on character position" + pos);
+				
+				
+				
+				
+			}
+		});
 		scrollPane.setViewportView(textPane);
 		scrollPane.setBorder(new LineBorder(Color.gray));
 
@@ -205,7 +244,8 @@ public class My_Editor extends JFrame {
 
 				//read in file
 				Open_File(file);
-
+				
+				//label shows currently opne file
 				working_label(file);
 
 
@@ -237,10 +277,10 @@ public class My_Editor extends JFrame {
 
 
 		//file options label
-
 		lblFile.setBounds(372, 55, 46, 14);
 		getContentPane().add(lblFile);
 
+		
 		//		Border emptyBorder = BorderFactory.createEmptyBorder();
 		//		scrollPane.setBorder(emptyBorder);
 
@@ -249,16 +289,17 @@ public class My_Editor extends JFrame {
 		//when click on file list field
 		list.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent evt) {
-				//get list
+				//get list of files
 				JList<File> list = (JList)evt.getSource();
 
+				//when double clicked
 				if (evt.getClickCount() == 2) {
 					int index = list.locationToIndex(evt.getPoint());
 
 //					//save current file before switching to another one
 //					Save_File(list.getSelectedValue());
 					
-					//set label
+					//set label to show current file open
 					lblFile.setText("File: " + list.getSelectedValue());
 				
 
@@ -301,7 +342,34 @@ public class My_Editor extends JFrame {
 		button.setFocusPainted(false);
 		button.setBounds(759, 46, 89, 23);
 		getContentPane().add(button);
-
+		
+		JButton btnNewButton_1 = new JButton("Test button");
+		btnNewButton_1.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				
+					StyleContext sc = StyleContext.getDefaultStyleContext();
+			        AttributeSet aset = sc.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Foreground, sc);
+	
+			        aset = sc.addAttribute(aset, StyleConstants.FontFamily, "Lucida Console");
+			        aset = sc.addAttribute(aset, StyleConstants.Alignment, StyleConstants.ALIGN_JUSTIFIED);
+			        aset = sc.addAttribute(aset, StyleConstants.Underline, true);
+			        aset = sc.addAttribute(aset, StyleConstants.ColorConstants.Foreground, Color.RED);
+			        aset = sc.addAttribute(aset, StyleConstants.Bold, true);
+	
+			        
+			        //select section of text
+			        textPane.select(15, 20);
+			        //change selection style
+			        textPane.setCharacterAttributes(aset, false);
+			
+			//	textPane.getSelectedText();
+				//textPane.replaceSelection("!!!!!!!!!!!!!!!!!!!!!!");
+				
+				
+			}
+		});
+		btnNewButton_1.setBounds(372, 524, 89, 23);
+		getContentPane().add(btnNewButton_1);
 
 
 		//initial data in editor
@@ -432,5 +500,4 @@ public class My_Editor extends JFrame {
 		lblFile.setBounds(372, 55, width, 14);
 		lblFile.setText(working_on);
 	}
-
 }
