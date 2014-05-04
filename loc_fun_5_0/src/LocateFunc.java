@@ -6,11 +6,11 @@
 	{
 		LocateFunc dataRecords = new LocateFunc();
 		dataRecords.parseFiles(args);
-//		try {
-//			Thread.sleep(1000);
-//		} catch (InterruptedException e){
-//			System.out.println("Thread interrupted.");
-//		}
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e){
+			System.out.println("Thread interrupted.");
+		}
 		dataRecords.dumpFunctionTable();
 	}
 */
@@ -22,7 +22,10 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.Files;
+import java.nio.charset.StandardCharsets;
 
 // Java parsing library
 import japa.parser.*;
@@ -37,7 +40,7 @@ public class LocateFunc {
 	//--------------------------------------------
 	// Function definition location information object.
 	public class Definition {
-		String fileName = "";
+		String fileName = "NOTFOUND";
 		Integer line = -1;
 	}
 
@@ -69,10 +72,21 @@ public class LocateFunc {
 
 
 	//--------------------------------------------
+	// Table for keeping track of line numbers and their position in the 
+	// active file. Each record is a key,value pair where the line number is 
+	// the key, and the value is the byte-offset from the beginning of the 
+	// file to the first character of the line.
+	//private Map<String, Map<Integer, Integer>> lineTable;
+	private Map<Integer, Integer> lineTable;
+
+
+	//--------------------------------------------
 	// Constructors
 	LocateFunc()
 	{
 		functionTable = new HashMap<String, Map<String, FuncInfo>>();
+		lineTable = new HashMap<Integer, Integer>();
+		//lineTable = new HashMap<String, Map<Integer, Integer>>();
 	}
 	LocateFunc(String[] fileNames)
 	{
@@ -108,10 +122,11 @@ public class LocateFunc {
 	// Parse a source file to object
 	private void readFileInToParseObjects(String fileName)
 	{
+		buildLineToOffsetTable(fileName);
 		try (FileInputStream inFile = new FileInputStream(fileName)){
 			CompilationUnit cu = new CompilationUnit();
 			try {
-				buildLineToOffsetTable(inFile);
+				//buildLineToOffsetTable(inFile); Using Java7 Files instead.
 				try {
 					// parse the file
 					cu = JavaParser.parse(inFile);
@@ -140,20 +155,38 @@ public class LocateFunc {
 	// Only the line number is known from japa.
 	// File relative byte-offset is needed for UI positioning methods.
 	private void buildLineToOffsetTable(String fileName)
-		throws IOException
 	{
+		// Using Java7 Files instead of file stream or buffer reader.
+		List<String> lines = new ArrayList<String>();
+		Integer offset = 0;
+		try {
+			lines = Files.readAllLines(Paths.get(fileName), StandardCharsets.UTF_8);
+			for (int i = 0; i < lines.size(); ++i){
+				lineTable.put(i, offset);
+				offset += lines.get(i).length();
+			}
+		} catch (IOException e){
+			e.printStackTrace();
+		}
+		System.out.println(" -------- LINE TABLE ----------");
+		System.out.println(lineTable);
+		/*
 		try (FileInputStream inFile = new FileInputStream(fileName)){
 			buildLineToOffsetTable(inFile);
 		} catch (IOException e){
 			e.printStackTrace();
 		}
+		*/
 	}
 	private void buildLineToOffsetTable(FileInputStream inFile)
 		throws IOException
 	{
 		/*
+		List<String> lines = new ArrayList<String>();
+		Integer offset = 0;
 		try {
-			//List "UTF-8" 
+			//lines = Files.readAllLines(inFile, StandardCharsets.UTF_8);
+			lines = Files.readAllLines(Paths.get(fileName), StandardCharsets.UTF_8);
 		} catch (IOException e){
 			e.printStackTrace();
 		}
@@ -244,7 +277,7 @@ public class LocateFunc {
 			// This visit method will be called for all methods in the 
 			// CompilationUnit, including inner class methods.
 			//if (n.getScope() != null){
-			//	addDefinition(arg.toString(), n.getScope() + n.getName(), n.getBeginLine());
+			//	addDefinition(arg.toString(), n.getScope() + "." + n.getName(), n.getBeginLine());
 			//} else {
 				addDefinition(arg.toString(), n.getName(), n.getBeginLine());
 			//}
@@ -262,16 +295,14 @@ public class LocateFunc {
 			// This visit method will be called for all methods in the 
 			// CompilationUnit, including inner class methods.
 			if (n.getScope() != null){
-				addCall(arg.toString(), n.getScope() + n.getName(), n.getBeginLine());
+				addCall(arg.toString(), n.getScope() + "." + n.getName(), n.getBeginLine());
 			} else {
 				addCall(arg.toString(), n.getName(), n.getBeginLine());
 			}
 			//addCall(arg.toString(), n.getName(), n.getBeginLine());
 			//addCall(arg.toString(), n, arg.toString());
 			System.out.println(MethodCallExpr.class.getMethods().toString());
-System.out.println("file: " + arg.toString() + ", scope: " + n.getScope() + ", funcName: " + n.getName() + ", other data: " + n.getData());
-//n.getScope()
-//n.getData()
+//System.out.println("file: " + arg.toString() + ", scope: " + n.getScope() + ", funcName: " + n.getName() + ", other data: " + n.getData());
 		}
 	}
 
