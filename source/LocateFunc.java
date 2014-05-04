@@ -1,6 +1,18 @@
 /* LocateFunc.java
- *
  * 2014-03-12
+	//--------------------------------------------
+	// Requires paths to source files.
+	public static void main(String[] args)
+	{
+		LocateFunc dataRecords = new LocateFunc();
+		dataRecords.parseFiles(args);
+//		try {
+//			Thread.sleep(1000);
+//		} catch (InterruptedException e){
+//			System.out.println("Thread interrupted.");
+//		}
+		dataRecords.dumpFunctionTable();
+	}
 */
 
 //package loc_func;
@@ -10,6 +22,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
+import java.nio.file.Files;
 
 // Java parsing library
 import japa.parser.*;
@@ -22,88 +35,136 @@ import japa.parser.ast.expr.*;
 //----------------locate functions------------------------------------
 public class LocateFunc {
 	//--------------------------------------------
-	private static class FuncInfo {
-		// Line number of where the function is defined.
-		public Integer definition = -1;
-		// List of line numbers of where the function is called.
-		public List<Integer> calls = new ArrayList<Integer>();
+	// Function definition location information object.
+	public class Definition {
+		String file = "";
+		Integer line = -1;
 	}
-	// Table for "function names" to "function definition location" and 
-	// "function call locations"; order independent.
-	// {fileName: {funcName: {"definition": line#, "call": [line#, line#]} } }
-	private static Map<String, Map<String, FuncInfo>> functionTable = 
-		new HashMap<String, Map<String, FuncInfo>>();
 
 
 	//--------------------------------------------
-	// Requires a path to source files.
-	//public static void getLibraries(String[] fileNames)
-	//public static String[] getLibraries()
-	//public static String[] getLibraries(String[] fileNames)
-	public static void main(String[] args)
-	{
-/*
-		String path = "C:/Users/vid/Desktop/kent state/2014 spring/Structure of programming languages/Project Locate_func/Locate_func/loc_fun_5_0/src/testSourceFiles/";
-		String f1 = path + "testClass1.java";
-		String f2 = path + "testClass2.java";
-		String[] files = {f1, f2};
+	// Helper structure for FuncInfo.
+	// Also used for returning general location information for a call.
+	public class Position {
+		public Integer line = -1;
+		public Integer begin = -1;
+		public Integer end = -1;
+		public Integer length = -1;
+	}
+	//--------------------------------------------
+	// Helper structure for functionTable.
+	private class FuncInfo {
+		// Line number of where the function is defined.
+		public Integer definition = -1;
+		// List of line numbers of where the function is called.
+		//public List<Integer> calls = new ArrayList<Integer>();
+		// List of (line number, begin position, name length) tuples of where the function is called.
+		public List<Position> calls = new ArrayList<Position>();
+	}
+	//--------------------------------------------
+	// Table for "function names" to "function definition location" and 
+	// "function call locations"; order independent.
+	// {fileName: {funcName: {"definition": line#, "call": [line#, line#]} } }
+	private Map<String, Map<String, FuncInfo>> functionTable;
 
-		//parse files 
-		parseFiles(files);
-*/
-		parseFiles(args);
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e){
-			System.out.println("Thread interrupted.");
-		}
-		dumpFunctionTable();
+
+	//--------------------------------------------
+	// Constructors
+	LocateFunc()
+	{
+		functionTable = new HashMap<String, Map<String, FuncInfo>>();
+	}
+	LocateFunc(String[] fileNames)
+	{
+		this();
+		parseFiles(fileNames);
 	}
 
 
 	//----------parse files using threads----------
-	private static void parseFiles(String[] fileNames)
+	public void parseFiles(String[] fileNames)
 	{
-		//for each file create a thread
+		ArrayList<ParseByThread> threadList = new ArrayList<ParseByThread>();
+		// For each file create a thread
 		for (String file : fileNames){
-			ParseByThread T1 = new ParseByThread(file);
-			T1.start();
+			ParseByThread t = new ParseByThread(file);
+			t.start();
+			// Keep a list of created threads
+			threadList.add(t);
+		}
+
+		// Wait for the threads to finish
+		try {
+			for (ParseByThread t : threadList){
+				t.join();
+			}
+		} catch (InterruptedException e){
+			e.printStackTrace();
 		}
 	}
 
 
 	//--------------------------------------------
 	// Parse a source file to object
-	//private static Map<String, List<Integer>> findFuncCalls(String fileName)
-	public static void readFileToParseObjects(String fileName)
+	private void readFileInToParseObjects(String fileName)
 	{
-		try {
-			FileInputStream inFile = new FileInputStream(fileName);
-
+		try (FileInputStream inFile = new FileInputStream(fileName)){
 			CompilationUnit cu = new CompilationUnit();
 			try {
-				// parse the file
-				cu = JavaParser.parse(inFile);
+				buildLineToOffsetTable(inFile);
+				try {
+					// parse the file
+					cu = JavaParser.parse(inFile);
+				} catch (Exception e){
+					e.printStackTrace();
+				} finally {
+				}
 			} catch (Exception e){
-			} finally {
-				inFile.close();
+				e.printStackTrace();
 			}
 
 			//System.out.println(cu.toString());
 			// visit and print the methods names
-			new MethodVisitor().visit(cu, fileName);
+			new MethodDefinitionVisitor().visit(cu, fileName);
 			new MethodCallVisitor().visit(cu, fileName);
 
 		} catch (IOException ioe){
 			System.out.println("Input/Output error.");
+			ioe.printStackTrace();
 			System.exit(1);
 		}
 	}
 
 
 	//--------------------------------------------
-	// Record a definition location
-	private static void addDefinition(
+	// Only the line number is known from japa.
+	// File relative byte-offset is needed for UI positioning methods.
+	private void buildLineToOffsetTable(String fileName)
+		throws IOException
+	{
+		try (FileInputStream inFile = new FileInputStream(fileName)){
+			buildLineToOffsetTable(inFile);
+		} catch (IOException e){
+			e.printStackTrace();
+		}
+	}
+	private void buildLineToOffsetTable(FileInputStream inFile)
+		throws IOException
+	{
+		/*
+		try {
+			//List "UTF-8" 
+		} catch (IOException e){
+			e.printStackTrace();
+		}
+		*/
+	}
+
+
+	//--------------------------------------------
+	// For some file, record a method's definition location.
+	// Location is only recorded as line number for definitions.
+	private void addDefinition(
 		String fileName, 
 		String functionName,
 		Integer lineNumber
@@ -130,64 +191,121 @@ public class LocateFunc {
 
 
 	//--------------------------------------------
-	// Record a call location
-	private static void addCall(
+	// For some file, record the location of a method call.
+	// Location is line number and character position for calls.
+	/*
+	private void addCall(
+		String fileName, 
+		MethodCallExpr callInfo
+	)
+	*/
+	private void addCall(
 		String fileName, 
 		String functionName,
 		Integer lineNumber
 	)
 	{
+//addDefinition(arg.toString(), n.getName(), n.getBeginLine());
+//n.getScope()
+//n.getData()
+		//String functionName = callInfo.getName();
+		Position p = new Position();
+		p.line = lineNumber;
+		//p.begin = 
+		//p.end = 
+		//p.length = 
+
 		if (functionTable.containsKey(fileName)){
 			if (functionTable.get(fileName).containsKey(functionName)){
-				functionTable.get(fileName).get(functionName)
-					.calls.add(lineNumber);
+				functionTable.get(fileName).get(functionName).calls.add(p);
 			} else {
 				FuncInfo info = new FuncInfo();
-				info.calls.add(lineNumber);
+				info.calls.add(p);
 				functionTable.get(fileName).put(functionName, info);
 			}
 		} else {
 			FuncInfo info = new FuncInfo();
-			//info.calls = new ArrayList<Integer>();
-			info.calls.add(lineNumber);
+			info.calls.add(p);
 			Map<String, FuncInfo> function = new HashMap<String, FuncInfo>();
 			function.put(functionName, info);
 			functionTable.put(fileName, function);
 		}
 	}
 
+
 	//--------------------------------------------
 	// Simple visitor implementation for visiting MethodDeclaration nodes. 
-	//find function definitions
-	private static class MethodVisitor extends VoidVisitorAdapter<Object>{
+	// Find function definitions
+	private class MethodDefinitionVisitor extends VoidVisitorAdapter<Object>
+	{
 		@Override
 		public void visit(MethodDeclaration n, Object arg){
 			// Here is where attributes of the method can be accessed.
 			// This visit method will be called for all methods in the 
 			// CompilationUnit, including inner class methods.
-//			System.out.println("Declaration: " + n.getName() + " " + n.getBeginLine() + " " + arg.toString());
 			addDefinition(arg.toString(), n.getName(), n.getBeginLine());
 		}
 	}
 
 
 	//--------------------------------------------
-	//find function calls	
-	private static class MethodCallVisitor extends VoidVisitorAdapter<Object>{
+	// Find function calls	
+	private class MethodCallVisitor extends VoidVisitorAdapter<Object>
+	{
 		@Override
 		public void visit(MethodCallExpr n, Object arg){
 			// Here is where attributes of the method can be accessed.
 			// This visit method will be called for all methods in the 
 			// CompilationUnit, including inner class methods.
-//			System.out.println("Call: " + n.getName() + " " + n.getBeginLine() + " " + arg.toString());
 			addCall(arg.toString(), n.getName(), n.getBeginLine());
+			//addCall(arg.toString(), n.getName(), n.getBeginLine());
+			//addCall(arg.toString(), n, arg.toString());
+			System.out.println(MethodCallExpr.class.getMethods().toString());
+System.out.println("file: " + arg.toString() + ", scope: " + n.getScope() + ", funcName: " + n.getName() + ", other data: " + n.getData());
+//n.getScope()
+//n.getData()
 		}
 	}
 
 
 	//--------------------------------------------
+	// Accessor for retrieving method call locations in a file.
+	public List<Position> callsLocations(String fileName)
+	{
+		List funcCalls = new ArrayList<Position>();
+		for (String functionName : functionTable.get(fileName).keySet()){
+			// `calls` is a list of Position objects.
+			funcCalls.addAll(functionTable.get(fileName).get(functionName).calls);
+		}
+		return funcCalls;
+	}
+
+
+	//--------------------------------------------
+	// Accessor for retrieving the file name and line number of where a 
+	// method is defined.
+	public Definition callDefinitionLocation(String findFunc)
+	{
+		Definition def = new Definition();
+
+		// Iterate through every file's records
+		for (String fileName : functionTable.keySet()){
+			// If there is a record for the function and it has a definition 
+			// set, then return the found information.
+			if (functionTable.get(fileName).containsKey(findFunc) && 
+				(-1 != functionTable.get(fileName).get(findFunc).definition))
+			{
+				def.file = fileName;
+				def.line = functionTable.get(fileName).get(findFunc).definition;
+				return def;
+			}
+		}
+		return def;
+	}
+
+
 	// A method for debugging the logging table, that record function locations.
-	private static void dumpFunctionTable()
+	private void dumpFunctionTable()
 	{
 		System.out.println();
 		System.out.println("================================================================================");
@@ -211,45 +329,40 @@ public class LocateFunc {
 		System.out.println();
 	}
 
-}
 
-
-//--------------------------------------------------------------------
-class ParseByThread extends Thread {
-	private Thread t;
-	private String threadName;
-
-
-	//--------------------------------------------
-	ParseByThread(String name){
-		threadName = name;
-		System.out.println("Creating thread " +  threadName);
-	}
-
-
-	//--------------------------------------------
-	public void run() {
-		System.out.println("Running " +  threadName);
-		//try {
-			LocateFunc.readFileToParseObjects(threadName);
-			//Thread.sleep(50);
-		//} catch (InterruptedException e){
-		//	System.out.println("Thread " + threadName + " interrupted.");
-		//}
-		System.out.println("Thread " +  threadName + " exiting.");
-	}
-
-
-	//--------------------------------------------
-	public void start ()
+	//--------------------------------------------------------------------
+	private class ParseByThread
+		extends Thread
 	{
-		System.out.println("Starting " +  threadName );
-		if (t == null)
+		private Thread t;
+		private String threadName;
+
+
+		//--------------------------------------------
+		ParseByThread(String name){
+			threadName = name;
+			System.out.println("Creating thread " +  threadName);
+		}
+
+
+		//--------------------------------------------
+		public void run() {
+			System.out.println("Running " +  threadName);
+			readFileInToParseObjects(threadName);
+			System.out.println("Thread " +  threadName + " exiting.");
+		}
+
+
+		//--------------------------------------------
+		public void start ()
 		{
-			t = new Thread (this, threadName);
-			t.start ();
+			System.out.println("Starting " +  threadName );
+			if (t == null)
+			{
+				t = new Thread (this, threadName);
+				t.start ();
+			}
 		}
 	}
-
 }
 
