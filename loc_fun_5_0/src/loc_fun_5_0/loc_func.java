@@ -5,16 +5,16 @@
 
 package loc_fun_5_0;
 
-import java.awt.List;
-import java.io.*;
-import java.util.ArrayList;
-
 // Java parsing library
-import japa.parser.*;
-import japa.parser.ast.*;
-import japa.parser.ast.visitor.*;
-import japa.parser.ast.body.*;
-import japa.parser.ast.expr.*;
+import japa.parser.JavaParser;
+import japa.parser.ast.CompilationUnit;
+import japa.parser.ast.body.MethodDeclaration;
+import japa.parser.ast.expr.MethodCallExpr;
+import japa.parser.ast.visitor.VoidVisitorAdapter;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
 
 
 //----------------locate functions------------------------------
