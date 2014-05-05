@@ -59,8 +59,6 @@ public class LocateFunc {
 	private class FuncInfo {
 		// Line number of where the function is defined.
 		public Integer definition = -1;
-		// List of line numbers of where the function is called.
-		//public List<Integer> calls = new ArrayList<Integer>();
 		// List of (line number, begin position, name length) tuples of where the function is called.
 		public List<Position> calls = new ArrayList<Position>();
 	}
@@ -76,8 +74,7 @@ public class LocateFunc {
 	// active file. Each record is a key,value pair where the line number is 
 	// the key, and the value is the byte-offset from the beginning of the 
 	// file to the first character of the line.
-	//private Map<String, Map<Integer, Integer>> lineTable;
-	private Map<Integer, Integer> lineTable;
+	private Map<String, Map<Integer, Integer>> lineTable;
 
 
 	//--------------------------------------------
@@ -85,8 +82,7 @@ public class LocateFunc {
 	LocateFunc()
 	{
 		functionTable = new HashMap<String, Map<String, FuncInfo>>();
-		lineTable = new HashMap<Integer, Integer>();
-		//lineTable = new HashMap<String, Map<Integer, Integer>>();
+		lineTable = new HashMap<String, Map<Integer, Integer>>();
 	}
 	LocateFunc(String[] fileNames)
 	{
@@ -159,17 +155,17 @@ public class LocateFunc {
 		// Using Java7 Files instead of file stream or buffer reader.
 		List<String> lines = new ArrayList<String>();
 		Integer offset = 0;
+		Map<Integer, Integer> records = new HashMap<Integer, Integer>();
 		try {
 			lines = Files.readAllLines(Paths.get(fileName), StandardCharsets.UTF_8);
 			for (int i = 0; i < lines.size(); ++i){
-				lineTable.put(i, offset);
-				offset += lines.get(i).length();
+				records.put(i, offset);
+				offset += lines.get(i).length() - 1;
 			}
+			lineTable.put(fileName, records);
 		} catch (IOException e){
 			e.printStackTrace();
 		}
-		System.out.println(" -------- LINE TABLE ----------");
-		System.out.println(lineTable);
 		/*
 		try (FileInputStream inFile = new FileInputStream(fileName)){
 			buildLineToOffsetTable(inFile);
@@ -229,24 +225,21 @@ public class LocateFunc {
 	/*
 	private void addCall(
 		String fileName, 
-		MethodCallExpr callInfo
+		String functionName,
+		Integer lineNumber
 	)
 	*/
 	private void addCall(
 		String fileName, 
-		String functionName,
-		Integer lineNumber
+		MethodCallExpr callInfo
 	)
 	{
-//addDefinition(arg.toString(), n.getName(), n.getBeginLine());
-//n.getScope()
-//n.getData()
-		//String functionName = callInfo.getName();
+		String functionName = callInfo.getScope() + "." + callInfo.getName();
 		Position p = new Position();
-		p.line = lineNumber;
-		//p.begin = 
-		//p.end = 
-		//p.length = 
+		p.length = functionName.length();
+		p.line = lineTable.get(fileName).get(callInfo.getBeginLine());
+		p.begin = p.line + callInfo.getBeginColumn();
+		p.end = p.begin + p.length;
 
 		if (functionTable.containsKey(fileName)){
 			if (functionTable.get(fileName).containsKey(functionName)){
@@ -271,13 +264,14 @@ public class LocateFunc {
 	// Find function definitions
 	private class MethodDefinitionVisitor extends VoidVisitorAdapter<Object>
 	{
+// TODO: look into japa ClassOrInterfaceDeclaration.java
 		@Override
 		public void visit(MethodDeclaration n, Object arg){
 			// Here is where attributes of the method can be accessed.
 			// This visit method will be called for all methods in the 
 			// CompilationUnit, including inner class methods.
 			//if (n.getScope() != null){
-			//	addDefinition(arg.toString(), n.getScope() + n.getName(), n.getBeginLine());
+			//	addDefinition(arg.toString(), n.getScope() + "." + n.getName(), n.getBeginLine());
 			//} else {
 				addDefinition(arg.toString(), n.getName(), n.getBeginLine());
 			//}
@@ -294,17 +288,15 @@ public class LocateFunc {
 			// Here is where attributes of the method can be accessed.
 			// This visit method will be called for all methods in the 
 			// CompilationUnit, including inner class methods.
-			if (n.getScope() != null){
-				addCall(arg.toString(), n.getScope() + n.getName(), n.getBeginLine());
-			} else {
-				addCall(arg.toString(), n.getName(), n.getBeginLine());
-			}
+	//		if (n.getScope() != null){
+	//			addCall(arg.toString(), n.getScope() + "." + n.getName(), n.getBeginLine());
+	//		} else {
+	//			addCall(arg.toString(), n.getName(), n.getBeginLine());
+	//		}
 			//addCall(arg.toString(), n.getName(), n.getBeginLine());
-			//addCall(arg.toString(), n, arg.toString());
+			addCall(arg.toString(), n);
 			System.out.println(MethodCallExpr.class.getMethods().toString());
-System.out.println("file: " + arg.toString() + ", scope: " + n.getScope() + ", funcName: " + n.getName() + ", other data: " + n.getData());
-//n.getScope()
-//n.getData()
+//System.out.println("file: " + arg.toString() + ", scope: " + n.getScope() + ", funcName: " + n.getName() + ", other data: " + n.getData());
 		}
 	}
 
@@ -313,7 +305,7 @@ System.out.println("file: " + arg.toString() + ", scope: " + n.getScope() + ", f
 	// Accessor for retrieving method call locations in a file.
 	public List<Position> callsLocations(String fileName)
 	{
-		List funcCalls = new ArrayList<Position>();
+		List<Position> funcCalls = new ArrayList<Position>();
 		for (String functionName : functionTable.get(fileName).keySet()){
 			// `calls` is a list of Position objects.
 			funcCalls.addAll(functionTable.get(fileName).get(functionName).calls);
@@ -345,6 +337,7 @@ System.out.println("file: " + arg.toString() + ", scope: " + n.getScope() + ", f
 	}
 
 
+	//--------------------------------------------
 	// A method for debugging the logging table, that record function locations.
 	public void dumpFunctionTable()
 	{
@@ -365,6 +358,22 @@ System.out.println("file: " + arg.toString() + ", scope: " + n.getScope() + ", f
 					functionTable.get(fileName).get(functionName).calls + "\n");
 			}
 		}
+
+		System.out.println("================================================================================");
+		System.out.println();
+	}
+
+
+	//--------------------------------------------
+	// A method for debugging the line position records table.
+	public void dumpLineTable()
+	{
+		System.out.println();
+		System.out.println("================================================================================");
+		System.out.println("Dumping line position-offset, records table...");
+		System.out.println("================================================================================");
+
+		System.out.println(lineTable);
 
 		System.out.println("================================================================================");
 		System.out.println();

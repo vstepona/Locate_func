@@ -160,7 +160,7 @@ public class LocateFunc {
 			lines = Files.readAllLines(Paths.get(fileName), StandardCharsets.UTF_8);
 			for (int i = 0; i < lines.size(); ++i){
 				records.put(i, offset);
-				offset += lines.get(i).length();
+				offset += lines.get(i).length() - 1;
 			}
 			lineTable.put(fileName, records);
 		} catch (IOException e){
@@ -305,7 +305,7 @@ public class LocateFunc {
 	// Accessor for retrieving method call locations in a file.
 	public List<Position> callsLocations(String fileName)
 	{
-		List funcCalls = new ArrayList<Position>();
+		List<Position> funcCalls = new ArrayList<Position>();
 		for (String functionName : functionTable.get(fileName).keySet()){
 			// `calls` is a list of Position objects.
 			funcCalls.addAll(functionTable.get(fileName).get(functionName).calls);
@@ -366,7 +366,18 @@ public class LocateFunc {
 
 	//--------------------------------------------
 	// A method for debugging the line position records table.
-//		System.out.println(dataRecords.dumpLineTable);
+	public void dumpLineTable()
+	{
+		System.out.println();
+		System.out.println("================================================================================");
+		System.out.println("Dumping line position-offset, records table...");
+		System.out.println("================================================================================");
+
+		System.out.println(lineTable);
+
+		System.out.println("================================================================================");
+		System.out.println();
+	}
 
 
 	//--------------------------------------------------------------------
