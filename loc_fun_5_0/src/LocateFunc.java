@@ -157,21 +157,51 @@ public class LocateFunc {
 	// File relative byte-offset is needed for UI positioning methods.
 	public void buildLineToOffsetTable(String fileName)
 	{
+		File readFile = new File(fileName);
+		BufferedReader reader = null;
+		
+		try {
+			reader = new BufferedReader(new FileReader(readFile));
+		} catch (IOException e){
+			e.printStackTrace();
+		}
+		String line = "";
+		Integer offset = 0;
+		Map<Integer, Integer> records = new HashMap<Integer, Integer>();
+		try {
+			line = reader.readLine();
+			int i = 0;
+			while (line != null){
+				records.put(i, offset);
+				offset += line.length() + System.getProperty("line.separator").length();
+				line = reader.readLine();
+				++i;
+			}
+		} catch (IOException e){
+			e.printStackTrace();
+		}
+		lineTable.put(fileName, records);
+
+		/*
 		// Using Java7 Files instead of file stream or buffer reader.
 		List<String> lines = new ArrayList<String>();
 		Integer offset = 0;
 		Map<Integer, Integer> records = new HashMap<Integer, Integer>();
 		try {
+			//lines = Files.readAllLines(Paths.get(fileName), StandardCharsets.US_ASCII);
 			lines = Files.readAllLines(Paths.get(fileName), StandardCharsets.UTF_8);
 			for (int i = 0; i < lines.size(); ++i){
 				records.put(i, offset);
 				offset += lines.get(i).length();
+				//offset += lines.get(i).length() + 1;
+				//offset += lines.get(i).length() + System.getProperty("line.separator").length();
 				//offset += lines.get(i).length() - 1;
 			}
 			lineTable.put(fileName, records);
 		} catch (IOException e){
 			e.printStackTrace();
 		}
+		*/
 		/*
 		try (FileInputStream inFile = new FileInputStream(fileName)){
 			buildLineToOffsetTable(inFile);
