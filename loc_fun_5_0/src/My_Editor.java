@@ -41,14 +41,12 @@ import java.util.Map;
 
 
 public class My_Editor extends JFrame {
-	private String newline = "\n";
 	protected static final String buttonString = "JButton";
 	private JLabel lblFile = new JLabel("");
 	private JTextPane textPane = new JTextPane();
 	private JList<File> list = new JList<File>();
 	private List<File> fList = new ArrayList<File>();
-
-
+	private LocateFunc dataRecords = new LocateFunc();
 
 	// Launch the application.
 	public static void main(String[] args) {
@@ -57,9 +55,6 @@ public class My_Editor extends JFrame {
 				try {
 					My_Editor frame = new My_Editor();
 					frame.setVisible(true);
-					///	new My_Editor().createUI();
-
-
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -80,7 +75,7 @@ public class My_Editor extends JFrame {
 
 
 		//-----Button to perform parsing and highlight function calls------
-		JButton btnNewButton = new JButton("get func. calls");
+		JButton btnNewButton = new JButton("Get func. calls");
 
 		btnNewButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -97,25 +92,16 @@ public class My_Editor extends JFrame {
 					j++;
 				}
 
-				//print files to be parsed ist
+				//print files to be parsed 
 				for(int i = 0; i < libs.length; i++){
 					System.out.println("file " + libs[i]);
 				}
 
-
+				//---------------------- parse libraries ----------------------------
 				System.out.println("parse libaries: ");
 
-				LocateFunc dataRecords = new LocateFunc();
 				dataRecords.parseFiles(libs);
-				//loc_func.parseFiles(libs);
 
-				LocateFunc.Definition def = dataRecords.callDefinitionLocation("foo");
-
-
-				System.out.println("asdasd  " + def.file);
-				
-				
-				
 				//wait for the threads to finish
 				try {
 					Thread.sleep(300);
@@ -126,34 +112,43 @@ public class My_Editor extends JFrame {
 
 				System.out.println("Get functions calls list in the open file: ");
 
-				//dataRecords.CallsLocations(fileName)
+				//show parser results 
+				//	dataRecords.dumpFunctionTable();
 
-
-
-				//textPane.getSelectionStart(1,4);
-
-				//textPane.select(1, 20);
-				//textPane.selectAll();
-				//textPane.setSelectionEnd(20);
-
-
-
-
-
+				//------------- Highlight function calls ------------------
 				System.out.println("Highlit func calls ");
 
+				String fname = lblFile.getText().replace("File: ","");
+
+				List<LocateFunc.Position> pos =	dataRecords.callsLocations(fname);
+				
+				
+
+				for(LocateFunc.Position rec: pos){
+					//--------------------------------------- set style ------------------------------------------------
+					StyleContext sc = StyleContext.getDefaultStyleContext();
+					AttributeSet aset = sc.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Foreground, sc);
+
+					aset = sc.addAttribute(aset, StyleConstants.FontFamily, "Lucida Console");
+					aset = sc.addAttribute(aset, StyleConstants.Alignment, StyleConstants.ALIGN_JUSTIFIED);
+					aset = sc.addAttribute(aset, StyleConstants.Underline, true);
+					aset = sc.addAttribute(aset, StyleConstants.ColorConstants.Foreground, Color.RED);
+					aset = sc.addAttribute(aset, StyleConstants.Bold, true);
 
 
+					//select section of text
+					textPane.select(rec.begin, rec.end); 
+					System.out.println("rec.begin, rec.end);" + rec.begin + "  " + rec.end);
 
+					//change selected text style
+					textPane.setCharacterAttributes(aset, false);
 
+				}
+				//release pos memory
+				pos = null;
 
 			}
 		});
-
-
-
-
-
 
 
 		btnNewButton.setBounds(18, 524, 180, 23);
@@ -167,7 +162,7 @@ public class My_Editor extends JFrame {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				if (e.getClickCount() == 2) {
-					
+
 					//get mouse position character
 					Point pt = new Point(e.getX(), e.getY());
 					int pos = textPane.viewToModel(pt);
@@ -175,40 +170,46 @@ public class My_Editor extends JFrame {
 					//get start and end of selected word
 					int fun_start =  textPane.getSelectionStart();
 					int fun_end = textPane.getSelectionEnd();
-					
+
 					System.out.println("mose clicked on character position in the file " + pos);
 					System.out.println("mose clicked on word in the file start " + fun_start);
 					System.out.println("mose clicked on word in the file end " + fun_end);
-			
-					
-					
-					
-					StyleContext sc = StyleContext.getDefaultStyleContext();
-					AttributeSet aset = sc.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Foreground, sc);
 
-					aset = sc.addAttribute(aset, StyleConstants.FontFamily, "Lucida Console");
-					aset = sc.addAttribute(aset, StyleConstants.Alignment, StyleConstants.ALIGN_JUSTIFIED);
-					aset = sc.addAttribute(aset, StyleConstants.Underline, true);
-					aset = sc.addAttribute(aset, StyleConstants.ColorConstants.Foreground, Color.RED);
-					aset = sc.addAttribute(aset, StyleConstants.Bold, true);
 
+
+//
+//					StyleContext sc = StyleContext.getDefaultStyleContext();
+//					AttributeSet aset = sc.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Foreground, sc);
+//
+//					aset = sc.addAttribute(aset, StyleConstants.FontFamily, "Lucida Console");
+//					aset = sc.addAttribute(aset, StyleConstants.Alignment, StyleConstants.ALIGN_JUSTIFIED);
+//					aset = sc.addAttribute(aset, StyleConstants.Underline, true);
+//					aset = sc.addAttribute(aset, StyleConstants.ColorConstants.Foreground, Color.RED);
+//					aset = sc.addAttribute(aset, StyleConstants.Bold, true);
+//
 
 					//select section of text
-//					textPane.select(15, 20);
+					//					textPane.select(15, 20);
 					textPane.select(fun_start, fun_end); 
 					//change selection style
-					textPane.setCharacterAttributes(aset, false);
-					
-					
-					
+//					textPane.setCharacterAttributes(aset, false);
 
-					System.out.println("you selected: " + textPane.getSelectedText());					
-					
-					//textPane.replaceSelection("!!!!!!!!!!!!!!!!!!!!!!");
-					
+					// get function file path
+					LocateFunc.Definition def = dataRecords.callDefinitionLocation(textPane.getSelectedText());
+
+
+
+					if ("NOTFOUND".equalsIgnoreCase(def.fileName) )
+						System.out.println("Function not found");
+					else {
+						File file = new File(def.fileName); 
+						Open_File(file);
+						working_label(file);
+					}
+
 				}
 
- 
+
 			}
 		});
 		scrollPane.setViewportView(textPane);
@@ -282,7 +283,7 @@ public class My_Editor extends JFrame {
 				//read in file
 				Open_File(file);
 
-				//label shows currently opne file
+				//label shows currently open file
 				working_label(file);
 
 
@@ -304,7 +305,7 @@ public class My_Editor extends JFrame {
 				if (index != -1)
 					list.setSelectedIndex(index);
 
-
+				
 			}
 
 		});
@@ -408,41 +409,17 @@ public class My_Editor extends JFrame {
 		btnNewButton_1.setBounds(372, 524, 89, 23);
 		getContentPane().add(btnNewButton_1);
 
+		//print welcome message
+		textPane.setText("Hello,\n\n"
 
-		//initial data in editor
-		String[] initString =
-			{ "This is an editable JTextPane, ",            //regular
-				"another ",                                   //italic
-				"styled ",                                    //bold
-				"text ",                                      //small
-				"component, ",                                //large
-				"which supports embedded components..." + newline,//regular
-				" " + newline,                                //button
-				"...and embedded icons..." + newline,         //regular
-				" ",                                          //icon
-				newline + "JTextPane is a subclass of JEditorPane that " +
-				"uses a StyledEditorKit and StyledDocument, and provides " +
-				"cover methods for interacting with those objects."
-			};
-
-
-		String[] initStyles =
-			{ "regular", "italic", "bold", "small", "large",
-				"regular", "button", "regular", "icon",
-				"regular"
-			};
-		//  addStylesToDocument(doc);
-
-		//insert string
-		try {
-			for (int i=0; i < initString.length; i++) {
-				doc.insertString(doc.getLength(), initString[i],
-						doc.getStyle(initStyles[i]));
-			}
-		} catch (BadLocationException ble) {
-			System.err.println("Couldn't insert initial text into text pane.");
-		}
-
+						+ "thank you for chosing this editor.\n\n" +
+						"Instructions:\n" +
+						"\t1. Open files that you will be using for your project\n" +
+						"\t2. Click \"Get func. calls\"\n" +
+						"\t3. Now you can edit your files. Do not forget to save the progress when\n" +
+						"\t   swithching between them!\n" +
+						"\t4. Double clicking on function call will take you to file that it is defined\n" +
+				"\t5. You can save a copy of a file by chosing \"Save As\"\n");
 	}
 
 
@@ -458,7 +435,6 @@ public class My_Editor extends JFrame {
 		try {
 			br = new BufferedReader(new FileReader(file));
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			System.out.println("Could not open file to read!");
 			e.printStackTrace();
 		}
@@ -479,7 +455,6 @@ public class My_Editor extends JFrame {
 			everything = sb.toString();
 
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} 
 
@@ -488,7 +463,6 @@ public class My_Editor extends JFrame {
 			try {
 				br.close();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
