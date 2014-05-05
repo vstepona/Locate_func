@@ -79,10 +79,14 @@ public class LocateFunc {
 
 	//--------------------------------------------
 	// Constructors
-	LocateFunc()
+	private void init()
 	{
 		functionTable = new HashMap<String, Map<String, FuncInfo>>();
 		lineTable = new HashMap<String, Map<Integer, Integer>>();
+	}
+	LocateFunc()
+	{
+		init();
 	}
 	LocateFunc(String[] fileNames)
 	{
@@ -94,6 +98,7 @@ public class LocateFunc {
 	//----------parse files using threads----------
 	public void parseFiles(String[] fileNames)
 	{
+		init(); // clear private records on each new file parsing.
 		ArrayList<ParseByThread> threadList = new ArrayList<ParseByThread>();
 		// For each file create a thread
 		for (String file : fileNames){
@@ -150,7 +155,7 @@ public class LocateFunc {
 	//--------------------------------------------
 	// Only the line number is known from japa.
 	// File relative byte-offset is needed for UI positioning methods.
-	private void buildLineToOffsetTable(String fileName)
+	public void buildLineToOffsetTable(String fileName)
 	{
 		// Using Java7 Files instead of file stream or buffer reader.
 		List<String> lines = new ArrayList<String>();
@@ -160,7 +165,8 @@ public class LocateFunc {
 			lines = Files.readAllLines(Paths.get(fileName), StandardCharsets.UTF_8);
 			for (int i = 0; i < lines.size(); ++i){
 				records.put(i, offset);
-				offset += lines.get(i).length() - 1;
+				offset += lines.get(i).length();
+				//offset += lines.get(i).length() - 1;
 			}
 			lineTable.put(fileName, records);
 		} catch (IOException e){
@@ -174,9 +180,10 @@ public class LocateFunc {
 		}
 		*/
 	}
-	private void buildLineToOffsetTable(FileInputStream inFile)
+	public void buildLineToOffsetTable(FileInputStream inFile)
 		throws IOException
 	{
+		// Using Java7 Files instead of file stream or buffer reader.
 		/*
 		List<String> lines = new ArrayList<String>();
 		Integer offset = 0;
@@ -354,8 +361,10 @@ public class LocateFunc {
 				System.out.format("\t\tName: " + functionName + "\n");
 				System.out.format("\t\t\tDefinition: " + 
 					functionTable.get(fileName).get(functionName).definition + "\n");
-				System.out.format("\t\t\tCalls: " + 
-					functionTable.get(fileName).get(functionName).calls + "\n");
+				System.out.format("\t\t\tCalls:\n");
+				for (Position p : functionTable.get(fileName).get(functionName).calls){
+					System.out.format("\t\t\t\tOffset: " + p.begin + ", Length: " + p.length + "\n");
+				}
 			}
 		}
 
