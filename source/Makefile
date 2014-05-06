@@ -11,10 +11,15 @@ compile: LocateFunc.java
 run: compile
 	java -cp ".:javaparser.jar" Test ./testSourceFiles/testClass1.java ./testSourceFiles/testClass2.java
 
-#	java LocateFunc testSourceFiles
+runGUI:
+	@mkdir -p classes
+	cp LocateFunc.java ../loc_fun_5_0/src/.
+	javac -cp ".:javaparser.jar" -d ./classes ../loc_fun_5_0/src/LocateFunc.java
+	javac -cp ".:javaparser.jar" -d ./classes ../loc_fun_5_0/src/My_Editor.java
+	java -cp ".:javaparser.jar:./classes" My_Editor
 
-test: clean compile
-	java -cp ".:javaparser.jar" LocateFunc testSourceFiles/testClass1.java testSourceFiles/testClass2.java
+#test: clean compile
+#	java -cp ".:javaparser.jar" LocateFunc testSourceFiles/testClass1.java testSourceFiles/testClass2.java
 
 help: usage
 usage:

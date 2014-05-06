@@ -98,7 +98,7 @@ public class LocateFunc {
 	//----------parse files using threads----------
 	public void parseFiles(String[] fileNames)
 	{
-		init(); // clear private records on each new file parsing.
+		init(); // clear private records on each new set parsing.
 		ArrayList<ParseByThread> threadList = new ArrayList<ParseByThread>();
 		// For each file create a thread
 		for (String file : fileNames){
@@ -113,6 +113,25 @@ public class LocateFunc {
 			for (ParseByThread t : threadList){
 				t.join();
 			}
+		} catch (InterruptedException e){
+			e.printStackTrace();
+		}
+	}
+
+
+	//--------------------------------------------
+	// Update the parsed records for an individual file.
+	public void updateParsedFile(String fileName)
+	{
+		// Clear private records for this file that is being re-parsed.
+		functionTable.get(fileName).clear();
+		// Ccreate a thread for this file
+		ParseByThread t = new ParseByThread(fileName);
+		t.start();
+
+		// Wait for the thread to finish
+		try {
+			t.join();
 		} catch (InterruptedException e){
 			e.printStackTrace();
 		}
