@@ -155,8 +155,11 @@ public class LocateFunc {
 	//--------------------------------------------
 	// Only the line number is known from japa.
 	// File relative byte-offset is needed for UI positioning methods.
+	// FIXME: The offset functions to do not seem to correspond correctly to 
+	// the opened files in the graphical editor.
 	public void buildLineToOffsetTable(String fileName)
 	{
+		/*
 		File readFile = new File(fileName);
 		BufferedReader reader = null;
 		
@@ -181,8 +184,8 @@ public class LocateFunc {
 			e.printStackTrace();
 		}
 		lineTable.put(fileName, records);
+		*/
 
-		/*
 		// Using Java7 Files instead of file stream or buffer reader.
 		List<String> lines = new ArrayList<String>();
 		Integer offset = 0;
@@ -201,7 +204,7 @@ public class LocateFunc {
 		} catch (IOException e){
 			e.printStackTrace();
 		}
-		*/
+
 		/*
 		try (FileInputStream inFile = new FileInputStream(fileName)){
 			buildLineToOffsetTable(inFile);
