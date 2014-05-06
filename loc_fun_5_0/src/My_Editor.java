@@ -65,7 +65,6 @@ public class My_Editor extends JFrame {
 	}
 
 
-
 	// Create the frame.
 	public My_Editor() {
 		//JFrame frame = new JFrame();
@@ -99,7 +98,6 @@ public class My_Editor extends JFrame {
 
 				//---------------------- parse libraries ----------------------------
 				System.out.println("parse libaries: ");
-
 				dataRecords.parseFiles(libs);
 
 				//wait for the threads to finish
@@ -113,8 +111,9 @@ public class My_Editor extends JFrame {
 				System.out.println("Get functions calls list in the open file: ");
 
 				//show parser results 
-				//	dataRecords.dumpFunctionTable();
-
+				dataRecords.dumpFunctionTable();
+				dataRecords.dumpLineTable();
+				
 				//------------- Highlight function calls ------------------
 				System.out.println("Highlit func calls ");
 
@@ -174,9 +173,6 @@ public class My_Editor extends JFrame {
 					System.out.println("mose clicked on character position in the file " + pos);
 					System.out.println("mose clicked on word in the file start " + fun_start);
 					System.out.println("mose clicked on word in the file end " + fun_end);
-
-
-
 //
 //					StyleContext sc = StyleContext.getDefaultStyleContext();
 //					AttributeSet aset = sc.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Foreground, sc);
@@ -187,9 +183,7 @@ public class My_Editor extends JFrame {
 //					aset = sc.addAttribute(aset, StyleConstants.ColorConstants.Foreground, Color.RED);
 //					aset = sc.addAttribute(aset, StyleConstants.Bold, true);
 //
-
 					//select section of text
-					//					textPane.select(15, 20);
 					textPane.select(fun_start, fun_end); 
 					//change selection style
 //					textPane.setCharacterAttributes(aset, false);
@@ -215,19 +209,12 @@ public class My_Editor extends JFrame {
 		scrollPane.setViewportView(textPane);
 		scrollPane.setBorder(new LineBorder(Color.gray));
 
-
-
 		StyledDocument doc = textPane.getStyledDocument();
-
-
-
-
 
 		JButton btnOpen = new JButton("Open new");
 		btnOpen.setBounds(239, 46, 123, 23);
 		getContentPane().add(btnOpen);
 		btnOpen.setFocusPainted(false);  //remove focus
-
 
 
 		//save as button in main editor
@@ -304,16 +291,10 @@ public class My_Editor extends JFrame {
 				//set focus on recently opened file
 				if (index != -1)
 					list.setSelectedIndex(index);
-
 				
 			}
 
 		});
-
-
-
-
-
 		//file options label
 		lblFile.setBounds(372, 55, 46, 14);
 		getContentPane().add(lblFile);
@@ -334,8 +315,8 @@ public class My_Editor extends JFrame {
 				if (evt.getClickCount() == 2) {
 					int index = list.locationToIndex(evt.getPoint());
 
-					//					//save current file before switching to another one
-					//					Save_File(list.getSelectedValue());
+					//save current file before switching to another one
+					//Save_File(list.getSelectedValue());
 
 					//set label to show current file open
 					lblFile.setText("File: " + list.getSelectedValue());
@@ -357,7 +338,7 @@ public class My_Editor extends JFrame {
 
 		//list object properties
 		list.setBounds(18, 80, 344, 413);
-		//add list ot content pane in main editor
+		//add list to content pane in main editor
 		getContentPane().add(list);
 
 		JLabel lblOpenFiles = new JLabel("Open Files:");
@@ -436,6 +417,7 @@ public class My_Editor extends JFrame {
 			br = new BufferedReader(new FileReader(file));
 		} catch (FileNotFoundException e) {
 			System.out.println("Could not open file to read!");
+			JOptionPane.showMessageDialog(null, "Could not open file to read!");
 			e.printStackTrace();
 		}
 
@@ -487,12 +469,11 @@ public class My_Editor extends JFrame {
 			//write to file
 			writer.print(our_file);
 
-			//	writer.println("The second line");
-
 		} catch (FileNotFoundException | UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
 			//	e.printStackTrace();
+			JOptionPane.showMessageDialog(null, "File not found!");
 		} catch (Exception e){
+			JOptionPane.showMessageDialog(null, "Something went wrong in save_file function!");
 			//e.printStackTrace();
 		}
 		//if did not open file there is no need to close it
